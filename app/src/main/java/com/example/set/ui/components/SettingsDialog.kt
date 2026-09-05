@@ -1,5 +1,6 @@
 package com.example.set.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +33,14 @@ fun SettingsDialog(
     showSetCount: Boolean,
     autoDealIfNoSets: Boolean,
     colorblindMode: Boolean,
+    immersiveMode: Boolean,
     onModeSelected: (GameMode) -> Unit,
     onSoundToggled: (Boolean) -> Unit,
     onHapticsToggled: (Boolean) -> Unit,
     onShowSetCountToggled: (Boolean) -> Unit,
     onAutoDealToggled: (Boolean) -> Unit,
     onColorblindToggled: (Boolean) -> Unit,
+    onImmersiveModeToggled: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -107,6 +110,13 @@ fun SettingsDialog(
                     onCheckedChange = onColorblindToggled
                 )
 
+                SettingSwitchRow(
+                    label = "Fullscreen / Immersive Mode",
+                    caption = "Fades out notification and navigation bars (swipe screen edge to reveal)",
+                    checked = immersiveMode,
+                    onCheckedChange = onImmersiveModeToggled
+                )
+
                 Spacer(modifier = Modifier.height(10.dp))
                 HorizontalDivider(color = DividerDefaults.color.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(10.dp))
@@ -151,6 +161,7 @@ private fun SettingSwitchRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

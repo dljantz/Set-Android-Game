@@ -1,5 +1,6 @@
 package com.example.set.ui
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,9 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.set.ui.components.BoardGrid
@@ -27,6 +33,30 @@ fun SetGameScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // Fullscreen / Immersive Mode controller
+    DisposableEffect(activity, uiState.immersiveMode) {
+        if (activity != null) {
+            val window = activity.window
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            if (uiState.immersiveMode) {
+                insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            } else {
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+        onDispose {
+            if (activity != null) {
+                val window = activity.window
+                val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -88,6 +118,7 @@ fun SetGameScreen(
             showSetCount = uiState.showSetCount,
             autoDealIfNoSets = uiState.autoDealIfNoSets,
             colorblindMode = uiState.colorblindMode,
+            immersiveMode = uiState.immersiveMode,
             onModeSelected = { mode ->
                 viewModel.startNewGame(mode)
                 viewModel.showSettingsDialog(false)
@@ -97,6 +128,7 @@ fun SetGameScreen(
             onShowSetCountToggled = { viewModel.toggleShowSetCount(it) },
             onAutoDealToggled = { viewModel.toggleAutoDeal(it) },
             onColorblindToggled = { viewModel.toggleColorblind(it) },
+            onImmersiveModeToggled = { viewModel.toggleImmersiveMode(it) },
             onDismiss = { viewModel.showSettingsDialog(false) }
         )
     }

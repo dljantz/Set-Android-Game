@@ -38,6 +38,7 @@ data class GameUiState(
     val showSetCount: Boolean = true,
     val autoDealIfNoSets: Boolean = true,
     val colorblindMode: Boolean = false,
+    val immersiveMode: Boolean = true,
     val showRulesDialog: Boolean = false,
     val showSettingsDialog: Boolean = false
 )
@@ -372,6 +373,10 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleColorblind(enabled: Boolean) {
         _uiState.update { it.copy(colorblindMode = enabled) }
+    }
+
+    fun toggleImmersiveMode(enabled: Boolean) {
+        _uiState.update { it.copy(immersiveMode = enabled) }
     }
 
     private fun dealFromDeck(deck: List<Card>, count: Int): Pair<List<Card>, List<Card>> {
