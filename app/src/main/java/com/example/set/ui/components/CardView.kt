@@ -180,8 +180,12 @@ private fun DrawScope.drawCardSymbols(
     shading: CardShading,
     color: Color
 ) {
-    val symbolWidth = canvasWidth * 0.78f
-    val symbolHeight = (canvasHeight * 0.22f).coerceAtMost(symbolWidth * 0.46f)
+    val maxSymbolWidth = canvasWidth * 0.78f
+    val maxSymbolHeight = canvasHeight * 0.22f
+
+    // Maintain symbol aspect ratio around 2.25:1 (width:height)
+    val symbolHeight = maxSymbolHeight.coerceAtMost(maxSymbolWidth * 0.46f)
+    val symbolWidth = (symbolHeight * 2.25f).coerceAtMost(maxSymbolWidth)
     val symbolLeft = (canvasWidth - symbolWidth) / 2f
 
     val totalCount = count.value
@@ -189,12 +193,12 @@ private fun DrawScope.drawCardSymbols(
     val yPositions = when (totalCount) {
         1 -> listOf((canvasHeight - symbolHeight) / 2f)
         2 -> {
-            val spacing = (canvasHeight * 0.10f).coerceAtMost(symbolHeight * 0.55f)
+            val spacing = (canvasHeight * 0.08f).coerceAtMost(symbolHeight * 0.50f)
             val startY = (canvasHeight - (2 * symbolHeight + spacing)) / 2f
             listOf(startY, startY + symbolHeight + spacing)
         }
         3 -> {
-            val spacing = (canvasHeight * 0.05f).coerceAtMost(symbolHeight * 0.28f)
+            val spacing = (canvasHeight * 0.04f).coerceAtMost(symbolHeight * 0.25f)
             val startY = (canvasHeight - (3 * symbolHeight + 2 * spacing)) / 2f
             listOf(startY, startY + symbolHeight + spacing, startY + 2 * (symbolHeight + spacing))
         }

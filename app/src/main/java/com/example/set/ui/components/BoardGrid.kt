@@ -1,17 +1,14 @@
 package com.example.set.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,66 +25,84 @@ fun BoardGrid(
     onCardClick: (Card) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (cards.size <= 12) {
-        // Automatically fit all 4 rows on screen without scrolling
-        val rows = cards.chunked(3)
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            rows.forEach { rowCards ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    rowCards.forEach { card ->
-                        CardView(
-                            card = card,
-                            isSelected = card in selectedCards,
-                            isHinted = card in hintCards,
-                            isMismatch = card in mismatchCards,
-                            isMatched = card in matchedCards,
-                            isColorblindMode = isColorblindMode,
-                            onClick = { onCardClick(card) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        )
-                    }
-                    // In case row has fewer than 3 cards, fill the remaining slots
-                    repeat(3 - rowCards.size) {
-                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val isLandscape = maxWidth > maxHeight
+
+        if (isLandscape) {
+            // In landscape: 3 rows, dynamic columns (4, 5, 6 for 12, 15, 18 cards)
+            val numRows = 3
+            val numCols = (cards.size + numRows - 1) / numRows
+            val rows = cards.chunked(numCols)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                rows.forEach { rowCards ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        rowCards.forEach { card ->
+                            CardView(
+                                card = card,
+                                isSelected = card in selectedCards,
+                                isHinted = card in hintCards,
+                                isMismatch = card in mismatchCards,
+                                isMatched = card in matchedCards,
+                                isColorblindMode = isColorblindMode,
+                                onClick = { onCardClick(card) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            )
+                        }
+                        repeat(numCols - rowCards.size) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
-        }
-    } else {
-        // If 15+ cards are dealt, use a scrollable grid
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = modifier.fillMaxSize()
-        ) {
-            items(
-                items = cards,
-                key = { it.id }
-            ) { card ->
-                CardView(
-                    card = card,
-                    isSelected = card in selectedCards,
-                    isHinted = card in hintCards,
-                    isMismatch = card in mismatchCards,
-                    isMatched = card in matchedCards,
-                    isColorblindMode = isColorblindMode,
-                    onClick = { onCardClick(card) },
-                    modifier = Modifier.aspectRatio(0.76f)
-                )
+        } else {
+            // In portrait: 3 columns, dynamic rows (4, 5, 6, 7 rows for 12, 15, 18, 21 cards)
+            val numCols = 3
+            val rows = cards.chunked(numCols)
+            val verticalSpacing = if (rows.size > 4) 4.dp else 6.dp
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+            ) {
+                rows.forEach { rowCards ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        rowCards.forEach { card ->
+                            CardView(
+                                card = card,
+                                isSelected = card in selectedCards,
+                                isHinted = card in hintCards,
+                                isMismatch = card in mismatchCards,
+                                isMatched = card in matchedCards,
+                                isColorblindMode = isColorblindMode,
+                                onClick = { onCardClick(card) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            )
+                        }
+                        repeat(numCols - rowCards.size) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
             }
         }
     }

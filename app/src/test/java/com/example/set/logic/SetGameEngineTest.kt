@@ -105,4 +105,32 @@ class SetGameEngineTest {
             }
         }
     }
+
+    @Test
+    fun testFindAllSets_userReportedCardsScenario_completesProperly() {
+        val c1 = Card(1, CardNumber.ONE, CardShape.OVAL, CardShading.OPEN, CardColor.RED)
+        val c2 = Card(2, CardNumber.TWO, CardShape.SQUIGGLE, CardShading.STRIPED, CardColor.PURPLE)
+        val c3 = Card(3, CardNumber.THREE, CardShape.DIAMOND, CardShading.SOLID, CardColor.GREEN)
+
+        // Verifying that the third card reported by user is indeed the exact mathematical completion
+        val complement = SetGameEngine.findComplementaryCard(c1, c2)
+        assertEquals(c3.number, complement.number)
+        assertEquals(c3.shape, complement.shape)
+        assertEquals(c3.shading, complement.shading)
+        assertEquals(c3.color, complement.color)
+        assertTrue(SetGameEngine.isSet(c1, c2, c3))
+
+        // When c3 is at index 14 (15th card, in the 5th row)
+        val dummyCards = (4..15).map { id ->
+            Card(id, CardNumber.ONE, CardShape.OVAL, CardShading.SOLID, CardColor.RED)
+        }
+        val board = listOf(c1, c2) + dummyCards.take(12) + listOf(c3)
+        assertEquals(15, board.size)
+
+        val sets = SetGameEngine.findAllSets(board)
+        assertTrue(sets.isNotEmpty())
+        val foundSet = sets.first { it.first == c1 && it.second == c2 }
+        assertEquals(c3, foundSet.third)
+        assertTrue(board.contains(foundSet.third))
+    }
 }

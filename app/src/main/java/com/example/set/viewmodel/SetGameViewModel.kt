@@ -33,7 +33,7 @@ data class GameUiState(
     val bannerIsError: Boolean = false,
     val validationResultForDialog: SetValidationResult? = null,
     val isGameOver: Boolean = false,
-    val soundEnabled: Boolean = true,
+    val soundEnabled: Boolean = false,
     val hapticsEnabled: Boolean = true,
     val showSetCount: Boolean = true,
     val autoDealIfNoSets: Boolean = true,
@@ -69,15 +69,22 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
         currentDeck = remainingDeck
 
         // If auto-deal is on and 0 sets exist, deal 3 more until a set exists or deck is empty
+        var autoDealtCount = 0
         if (_uiState.value.autoDealIfNoSets) {
             while (!SetGameEngine.hasAnySet(initialBoard) && currentDeck.isNotEmpty()) {
                 val (extra, nextDeck) = dealFromDeck(currentDeck, 3)
                 initialBoard.addAll(extra)
                 currentDeck = nextDeck
+                autoDealtCount += extra.size
             }
         }
 
         val availableSets = SetGameEngine.findAllSets(initialBoard).size
+        val startMessage = if (autoDealtCount > 0) {
+            "Game started! Auto-dealt $autoDealtCount cards because 0 Sets were in the first 12."
+        } else {
+            "Game started! Find your first SET."
+        }
 
         _uiState.update {
             it.copy(
@@ -93,7 +100,7 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
                 isTimerRunning = true,
                 gameMode = mode,
                 availableSetsCount = availableSets,
-                bannerMessage = "Game started! Find your first SET.",
+                bannerMessage = startMessage,
                 bannerIsError = false,
                 validationResultForDialog = null,
                 isGameOver = false
@@ -208,11 +215,13 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
             }
 
             // Auto-deal if no sets and setting enabled
+            var autoDealtCount = 0
             if (currentState.autoDealIfNoSets) {
                 while (!SetGameEngine.hasAnySet(currentBoard) && currentDeck.isNotEmpty()) {
                     val (extra, nextDeck) = dealFromDeck(currentDeck, 3)
                     currentBoard.addAll(extra)
                     currentDeck = nextDeck
+                    autoDealtCount += extra.size
                 }
             }
 
@@ -225,8 +234,11 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
                     deck = currentDeck,
                     selectedCards = emptySet(),
                     matchedCards = emptySet(),
+                    hintCards = emptySet(),
+                    hintLevel = 0,
                     availableSetsCount = availableSets,
-                    isGameOver = isGameOver
+                    isGameOver = isGameOver,
+                    bannerMessage = if (autoDealtCount > 0) "Valid SET! Auto-dealt $autoDealtCount extra cards since no Sets remained." else it.bannerMessage
                 )
             }
         }
@@ -286,6 +298,10 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
         if (sets.isEmpty()) {
             _uiState.update {
                 it.copy(
+                    selectedCards = emptySet(),
+                    mismatchCards = emptySet(),
+                    hintCards = emptySet(),
+                    hintLevel = 0,
                     bannerMessage = "No Sets on the board! Tap '+3 Cards' to deal more.",
                     bannerIsError = true
                 )
@@ -300,6 +316,8 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
             1 -> {
                 _uiState.update {
                     it.copy(
+                        selectedCards = emptySet(),
+                        mismatchCards = emptySet(),
                         hintLevel = 1,
                         hintCards = emptySet(),
                         bannerMessage = "Hint: There are ${sets.size} valid Set(s) on the board.",
@@ -310,6 +328,8 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
             2 -> {
                 _uiState.update {
                     it.copy(
+                        selectedCards = emptySet(),
+                        mismatchCards = emptySet(),
                         hintLevel = 2,
                         hintCards = setOf(firstSet.first),
                         bannerMessage = "Hint: One card in a Set has been highlighted.",
@@ -320,6 +340,8 @@ class SetGameViewModel(application: Application) : AndroidViewModel(application)
             3 -> {
                 _uiState.update {
                     it.copy(
+                        selectedCards = emptySet(),
+                        mismatchCards = emptySet(),
                         hintLevel = 3,
                         hintCards = setOf(firstSet.first, firstSet.second),
                         bannerMessage = "Hint: Two cards of a Set highlighted! Find the 3rd!",
