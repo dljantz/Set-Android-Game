@@ -137,8 +137,7 @@ fun SetGameScreen(
         GameOverDialog(
             score = uiState.score,
             elapsedSeconds = uiState.elapsedSeconds,
-            onPlayAgain = { viewModel.startNewGame() },
-            onDismiss = { /* Player can dismiss to review the final board */ }
+            onPlayAgain = { viewModel.startNewGame() }
         )
     }
 

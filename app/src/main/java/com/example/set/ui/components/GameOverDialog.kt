@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,15 +19,14 @@ import androidx.compose.ui.unit.sp
 fun GameOverDialog(
     score: Int,
     elapsedSeconds: Long,
-    onPlayAgain: () -> Unit,
-    onDismiss: () -> Unit
+    onPlayAgain: () -> Unit
 ) {
     val minutes = elapsedSeconds / 60
     val seconds = elapsedSeconds % 60
     val formattedTime = "%02d:%02d".format(minutes, seconds)
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         title = {
             Text(
                 text = "🎉 Deck Cleared!",
@@ -62,11 +60,6 @@ fun GameOverDialog(
         confirmButton = {
             Button(onClick = onPlayAgain) {
                 Text("Play Again")
-            }
-        },
-        dismissButton = {
-            OutlinedButton(onClick = onDismiss) {
-                Text("View Board")
             }
         }
     )
